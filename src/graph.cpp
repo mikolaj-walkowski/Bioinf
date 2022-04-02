@@ -94,7 +94,6 @@ vector<int> Graph::longestP(){
             }
         }
     }
-    cout<<"Longest path val: "<< longestVal << "\n";
     return path[longest];
 }
 
@@ -109,13 +108,28 @@ void Graph::printMatrix(){
    }
 }
 
-void Graph::printPath(const vector<int>& p){
-    cout<<names[p[0]]<<" "<<aMatrix[p[0]][p[1]];
-    for (int i = 1; i < p.size(); i++)
+void printSpaces(int n){
+    for (int i = 0; i < n; i++)
     {
-        cout<<" "<<names[p[i]]<<" "<<aMatrix[p[i-1]][p[i]];
+        cout<<" ";
     }
+}
+
+void Graph::printPath(const vector<int>& p){
+    
+    cout<<names[p[0]]<<" "<<aMatrix[p[0]][p[1]]<<"\n";
+    int offset=names[0].length() -aMatrix[p[0]][p[1]];
+    printSpaces(offset);
+
+    for (int i = 1; i < p.size() -1 ; i++)
+    {
+        cout<<names[p[i]]<<" "<<aMatrix[p[i]][p[i+1]]<<'\n';
+        offset+= (names[0].length() - aMatrix[p[i]][p[i+1]]);
+        printSpaces(offset);
+    }
+    cout<<names[p[p.size() -1]];
     cout<<'\n';
+    cout<<"Longest Path Val:"<< offset+names[0].length()<<'\n';
 }
 
  Graph::~Graph()
