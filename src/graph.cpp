@@ -1,16 +1,14 @@
-#include "headers/graph.h"
+#include "graph.h"
 
 int overlap(string a, string b){
     int res = -1;
     for (int i = 0; i < a.length(); i++)
     {
-        //cout<< a.substr(i) << " "<<  b.substr(0,a.length()-i)<<'\n';
         if(a.substr(i)== b.substr(0,a.length()-i)){
             res = a.length()- i;
             break;
         }
     }
-    //cout << res<<"\n";
     return res;
 }
  
@@ -25,6 +23,7 @@ int overlap(string a, string b){
     }
     in.close();
     aMatrix.resize(names.size(),vector<int>(names.size(), 0));
+    size = names.size();
     
     for (int i = 0; i < names.size(); i++)
     {
@@ -33,6 +32,20 @@ int overlap(string a, string b){
             int over = overlap(names[i],names[j]);
             if(i != j && over!=-1){
                 aMatrix[i][j] = over;
+            }
+        }   
+    }
+    for (int i = 0; i < names.size(); i++)
+    {
+        aList.push_back(vector<int>());
+        aListRev.push_back(vector<int>());
+        for (int j = 0; j < names.size(); j++)
+        {
+            if(aMatrix[i][j]!= 0){
+                aList[i].push_back(j);
+            }
+            if(aMatrix[j][i]!= 0){
+                aListRev[i].push_back(j);
             }
         }   
     }
@@ -116,6 +129,11 @@ void printSpaces(int n){
 }
 
 void Graph::printPath(const vector<int>& p){
+    for (int i = 0; i < p.size(); i++)
+    {
+        cout<<p[i]<<",";
+    }
+    cout<<"\n";
     
     cout<<names[p[0]]<<" "<<aMatrix[p[0]][p[1]]<<"\n";
     int offset=names[0].length() -aMatrix[p[0]][p[1]];
@@ -131,6 +149,21 @@ void Graph::printPath(const vector<int>& p){
     cout<<'\n';
     cout<<"Longest Path Val:"<< offset+names[0].length()<<'\n';
 }
+
+int Graph::wordLength(const vector<int>& p){
+    int out = names[p[0]].length();
+    for (int i = 1; i < p.size() -1 ; i++)
+    {
+        out+= (names[0].length() - aMatrix[p[i]][p[i+1]]);
+    }
+    return out;
+}
+
+// bool Graph::repeats(const vector<int>&p){
+//     for (int i = 0; i < p.size(); ++i){
+//         if 
+//     }
+// }
 
  Graph::~Graph()
  {

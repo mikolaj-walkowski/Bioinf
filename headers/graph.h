@@ -13,13 +13,20 @@ using namespace std;
  {
  public:
     vector<vector<int>> aMatrix;
+    vector<vector<int>> aList;
+    vector<vector<int>> aListRev;
+
     vector<string> names;
     vector<int> path;
-    
+    int size;
+    int length;
+
     vector<int> longestP();
     
     void printMatrix();
-    void printPath(const vector<int> &p);
+    void printPath(const vector<int> &);
+    int wordLength(const vector<int>&);
+   //  bool repeats(const vector<int>&);
 
     Graph(const char* name);
     ~Graph();
