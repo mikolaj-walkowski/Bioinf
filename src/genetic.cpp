@@ -35,14 +35,14 @@ void Generation::score(Sequence &s)
 {
     int wL = graph->wordLength(s.val);
     //int len = graph->length - wL > 0 ? wL - graph->length : graph->length - wL;
-    int len =graph->length - wL;
+    int len = abs(graph->length - wL)*-1;
     s.len = len;
-    len*=len*-1;
+    //len*=len*-1;
     //len*=10;
     int cov = s.val.size() - graph->size;
     s.cov = cov;
-    cov*=cov*-1;
-    s.score = cov + len;
+    //cov*=10;
+    s.score = (((float)s.val.size())/((float)wL))*400 + cov + len;
 }
 
 void Generation::grow(vector<int>& core){
@@ -73,8 +73,20 @@ void Generation::mutate(const Sequence& s)
     int i = (rand() % (s.val.size()- 2))+ 1;
     vector<int> core1(s.val.begin(),s.val.begin()+i);
     vector<int> core2(s.val.begin() + i,s.val.end());
-    grow(core1);
-    grow(core2);
+    
+    Sequence s1, s2;
+    
+    s1.val = core1;
+    s2.val = core2;
+    
+    score(s1);
+    score(s2);
+
+    sequences.push_back(s1);
+    sequences.push_back(s2);
+
+    //grow(core1);
+    //grow(core2);
 }
 
 void Generation::combine(const Sequence &a, const Sequence &b)
@@ -91,7 +103,7 @@ void Generation::step()
     int size = sequences.size();
     for (int i = 0; i < size; i++)
     {
-        for (int j = 0; j < 100; j++)
+        for (int j = 0; j < 10; j++)
         {
             grow(sequences[i].val);
             mutate(sequences[i]);
@@ -102,11 +114,11 @@ void Generation::step()
     // {
     //     cout << "Seq " << i + 1 << ": Score: " << sequences[i].score << "\n";
     // }
-    sequences = vector<Sequence>(sequences.begin(), sequences.begin() + 10);
+    sequences = vector<Sequence>(sequences.begin(), sequences.begin() + 100);
 }
 void Generation::showResults(){
-    for (int i = 0; i < sequences.size(); i++)
+    for (int i = 0; i < sequences.size() && i < 20; i++)
     {
-        cout<<"Rank: "<<i<<"\tLen: "<< sequences[i].len << "\tCov: "<< sequences[i].cov<<"\n";
+        cout<<"Rank: "<<i+1<<" \tLen: "<< sequences[i].len << "\tCov: "<< sequences[i].cov<<"\tScore: "<< sequences[i].score<<"\n";
     }
 }

@@ -9,16 +9,7 @@ int main(int, char**) {
     
     Generation gen(&g);
 
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     for (int j = 0; j < gen.sequences[i].val.size(); j++)
-    //     {
-    //         cout<<gen.sequences[i].val[j] <<" ";
-    //     }
-    //     cout<<"\n";
-    // }
-
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 500; i++)
     {
         gen.step();
     }
