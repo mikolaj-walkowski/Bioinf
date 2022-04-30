@@ -101,19 +101,53 @@ bool SeqCmp(const Sequence &a, const Sequence &b)
 void Generation::step()
 {
     int size = sequences.size();
-    for (int i = 0; i < size; i++)
+    oldSequences = sequences;
+
+    while (sequences.size()<maxSize)
     {
-        for (int j = 0; j < 10; j++)
+        int operation = rand()%opTotalWeight;
+        int currSum=0;
+        Operation e;
+        for (int i = 0; i < opHelper.size(); i++)
         {
-            grow(sequences[i].val);
-            mutate(sequences[i]);
+            currSum+= opWeights[opHelper[i]];
+            if(operation < currSum){
+                e = opHelper[i];
+                break;
+            }
         }
+        switch (e)
+        {
+        case MUTATE:{
+            int i = rand()%oldSequences.size();
+            mutate(oldSequences[i]);
+            break;
+        }   
+        case GROW:{
+            int i = rand()%oldSequences.size();
+            grow(oldSequences[i].val);
+            break;
+        }   
+        case CROSS:{
+            //TODO
+            break;
+        }   
+        case CONNECT:{
+            //TODO
+            break;
+        }   
+        case INSERT:{
+            //TODO
+            break;
+        }   
+        default:{
+            break;
+        }   
+        }
+        
     }
+    
     sort(sequences.begin(), sequences.end(), SeqCmp);
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     cout << "Seq " << i + 1 << ": Score: " << sequences[i].score << "\n";
-    // }
     sequences = vector<Sequence>(sequences.begin(), sequences.begin() + 100);
 }
 void Generation::showResults(){
