@@ -8,6 +8,11 @@ void printvec(const vector<int> a){
 }
 Generation::Generation(Graph *a) : graph(a)
 {
+    for (int i = 0; i < opHelper.size(); i++)
+    {
+        opTotalWeight+= opWeights[i];
+    }
+    
     for (int i = 0; i < 100; i++)
     {
         Sequence s;
