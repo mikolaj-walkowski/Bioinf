@@ -3,13 +3,18 @@
 #include "graph.h"
 #include <limits.h>
 
-struct Sequence
+using namespace std;
+
+class Sequence
 {
-    vector<int> val = vector<int>();
-    int score=INT_MIN;
-    int len;
-    int cov;
+    public:
+    vector<int> val;
+    float score;
+    float len;
+    float cov;
+    float density;
 };
+
 enum Operation{
     MUTATE,
     GROW,
@@ -18,18 +23,21 @@ enum Operation{
     INSERT
 };
 
-using namespace std;
-
 class Generation{
 public:
-    vector<Sequence> oldSequences;
-    vector<Sequence> sequences;
+    // vector<Sequence> oldSequences;
+    // vector<Sequence> sequences;
 
     Graph* graph;
 
-    int maxSize = 1000;
-    int opWeights[5]={4,1,0,0,0};
+    int opWeights[5]={7,2,0,0,0};
     int opTotalWeight=0;
+
+    int maxSize = 5000;
+    int population_size = 0;
+    int population_culled = 200;
+    Sequence population[5005];
+
     vector<Operation> opHelper={MUTATE,GROW,CROSS,CONNECT,INSERT};
 
     Generation(Graph*);
@@ -37,7 +45,11 @@ public:
     void score(Sequence& s);
     void combine(const Sequence& a,const Sequence& b);
     void mutate(const Sequence& a);
-    void grow(vector<int>& s);
+    void grow(const vector<int>& s);
+    void connect(const Sequence& a,const Sequence& b);
+
+    // void erase(Sequence&); 
+    void addSeq(Sequence);
     void showResults();
     void step();
 

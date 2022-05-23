@@ -1,19 +1,27 @@
 #include "genetic.h"
-void printvec(const vector<int> a){
-    for (int i = 0; i < a.size(); i++)
-    {
-        cout<<a[i]<<" ";
-    }
-    cout<<"\n";
-}
+#include <set>
+#include <limits>
+
+
+float epsilon = 0;
+
+// void printvec(const vector<int> a){
+//     for (int i = 0; i < a.size(); i++)
+//     {
+//         cout<<a[i]<<" ";
+//     }
+//     cout<<"\n";
+// }
+
 Generation::Generation(Graph *a) : graph(a)
 {
+    epsilon = ((float)a->names[0].length())/((float)a->length);
     for (int i = 0; i < opHelper.size(); i++)
     {
         opTotalWeight+= opWeights[i];
     }
     
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < population_culled; i++)
     {
         Sequence s;
         int j = rand();
@@ -31,26 +39,40 @@ Generation::Generation(Graph *a) : graph(a)
         s.val.push_back(graph->aList[j][k]);
 
         score(s);
-        sequences.push_back(s);
-        //printvec(s.val);
+        addSeq(s);
     }
+}
+
+bool validate(const vector<int>& a){
+    set<int> b(a.begin(),a.end());
+    return a.size()==b.size();
+}
+
+void Generation::connect(const Sequence& a, const Sequence& b){
+    
 }
 
 void Generation::score(Sequence &s)
 {
-    int wL = graph->wordLength(s.val);
+    float wL = graph->wordLength(s.val);
     //int len = graph->length - wL > 0 ? wL - graph->length : graph->length - wL;
-    int len = abs(graph->length - wL)*-1;
+    
+    if(wL > graph->length + 10) {s.cov = numeric_limits<float>::lowest(); s.density = numeric_limits<float>::lowest(); s.len=numeric_limits<float>::lowest();s.score=numeric_limits<float>::lowest();return;}
+    
+    float len = (-1.f/((float)graph->length))*abs(wL-graph->length) + 1.f;
     s.len = len;
-    //len*=len*-1;
-    //len*=10;
-    int cov = s.val.size() - graph->size;
+
+    float cov = ((float)s.val.size())/((float)this->graph->size);
     s.cov = cov;
-    //cov*=10;
-    s.score = (((float)s.val.size())/((float)wL))*400 + cov + len;
+
+    float d = (((float)s.val.size())/wL);
+    s.density = d;
+
+    //int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0;
+    s.score = 5*d; //+ cov; //+ len;// + bonus;
 }
 
-void Generation::grow(vector<int>& core){
+void Generation::grow(const vector<int>& core){
         auto Con = graph->aListRev[core[0]];
         int e = rand() % Con.size();
         Sequence seq;
@@ -61,20 +83,24 @@ void Generation::grow(vector<int>& core){
         seq.val.insert(seq.val.end(), core.begin(),core.end());
         
         Con = graph->aList[core[core.size()-1]];
+
         e = rand() % Con.size();
-        if (find(core.begin(),core.end(), Con[e]) == core.end())
+
+        if (find(seq.val.begin(),seq.val.end(), Con[e]) == seq.val.end())
         {
             seq.val.push_back(Con[e]);
         }
         
         if(seq.val.size() > 2 ){
         score(seq);
-        sequences.push_back(seq);
+
+        addSeq(seq);
         }
-        //printvec(seq.val);
 }
 void Generation::mutate(const Sequence& s)
 {
+    if(s.val.size()<3)
+        return;
     int i = (rand() % (s.val.size()- 2))+ 1;
     vector<int> core1(s.val.begin(),s.val.begin()+i);
     vector<int> core2(s.val.begin() + i,s.val.end());
@@ -87,32 +113,38 @@ void Generation::mutate(const Sequence& s)
     score(s1);
     score(s2);
 
-    sequences.push_back(s1);
-    sequences.push_back(s2);
-
-    //grow(core1);
-    //grow(core2);
+    addSeq(s1);
+    addSeq(s2);
 }
 
 void Generation::combine(const Sequence &a, const Sequence &b)
 {
+    for (int i = 0; i < a.len; i++)
+    {
+    }
+    
 }
 
 bool SeqCmp(const Sequence &a, const Sequence &b)
 {
-    return a.score > b.score;
+    if (abs(a.len - b.len) <= 10 ){
+        return a.cov> b.cov;
+    }
+
+    // return a.cov + a.len/a.len +b.len*3 > b.cov/b.len + b.len*3;
+    return a.score > b.score; 
 }
 
 void Generation::step()
 {
-    int size = sequences.size();
-    oldSequences = sequences;
 
-    while (sequences.size()<maxSize)
+    while (population_size < maxSize)
     {
         int operation = rand()%opTotalWeight;
         int currSum=0;
+        
         Operation e;
+
         for (int i = 0; i < opHelper.size(); i++)
         {
             currSum+= opWeights[opHelper[i]];
@@ -124,13 +156,13 @@ void Generation::step()
         switch (e)
         {
         case MUTATE:{
-            int i = rand()%oldSequences.size();
-            mutate(oldSequences[i]);
+            int i = rand()%population_culled;
+            mutate(population[i]);
             break;
         }   
         case GROW:{
-            int i = rand()%oldSequences.size();
-            grow(oldSequences[i].val);
+            int i = rand()%population_culled;
+            grow(population[i].val);
             break;
         }   
         case CROSS:{
@@ -152,12 +184,16 @@ void Generation::step()
         
     }
     
-    sort(sequences.begin(), sequences.end(), SeqCmp);
-    sequences = vector<Sequence>(sequences.begin(), sequences.begin() + 100);
+    std::sort(population, population+population_size, SeqCmp);
+    population_size=population_culled;
 }
 void Generation::showResults(){
-    for (int i = 0; i < sequences.size() && i < 20; i++)
+    for (int i = 0; i < population_size && i < 20; i++)
     {
-        cout<<"Rank: "<<i+1<<" \tLen: "<< sequences[i].len << "\tCov: "<< sequences[i].cov<<"\tScore: "<< sequences[i].score<<"\n";
+        cout<<"Rank: "<<i+1<<" \tLen: "<< population[i].len << "\tCov: "<< population[i].cov<<"\tScore: "<< population[i].score<<"\n";
     }
+}
+
+void Generation::addSeq(Sequence a){
+    population[population_size++]  = a;
 }
