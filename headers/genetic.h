@@ -25,8 +25,6 @@ enum Operation{
 
 class Generation{
 public:
-    // vector<Sequence> oldSequences;
-    // vector<Sequence> sequences;
 
     Graph* graph;
 
@@ -35,7 +33,7 @@ public:
 
     int maxSize = 5000;
     int population_size = 0;
-    int population_culled = 200;
+    int population_culled = 300;
     Sequence population[5005];
 
     vector<Operation> opHelper={MUTATE,GROW,CROSS,CONNECT,INSERT};
@@ -48,7 +46,6 @@ public:
     void grow(const vector<int>& s);
     void connect(const Sequence& a,const Sequence& b);
 
-    // void erase(Sequence&); 
     void addSeq(Sequence);
     void showResults();
     void step();

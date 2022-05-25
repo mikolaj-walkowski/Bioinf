@@ -57,8 +57,8 @@ void Generation::score(Sequence &s)
     float wL = graph->wordLength(s.val);
     //int len = graph->length - wL > 0 ? wL - graph->length : graph->length - wL;
     
-    if(wL > graph->length + 10) {s.cov = numeric_limits<float>::lowest(); s.density = numeric_limits<float>::lowest(); s.len=numeric_limits<float>::lowest();s.score=numeric_limits<float>::lowest();return;}
-    
+    // if(wL > graph->length + 10) {s.cov = numeric_limits<float>::lowest(); s.density = numeric_limits<float>::lowest(); s.len=numeric_limits<float>::lowest();s.score=numeric_limits<float>::lowest();return;}
+    // dla idealnej 1 
     float len = (-1.f/((float)graph->length))*abs(wL-graph->length) + 1.f;
     s.len = len;
 
@@ -68,8 +68,8 @@ void Generation::score(Sequence &s)
     float d = (((float)s.val.size())/wL);
     s.density = d;
 
-    //int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0;
-    s.score = 5*d; //+ cov; //+ len;// + bonus;
+    int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0;
+    s.score = 5*d + len  ; //+ cov + len + bonus*5;
 }
 
 void Generation::grow(const vector<int>& core){
@@ -127,9 +127,9 @@ void Generation::combine(const Sequence &a, const Sequence &b)
 
 bool SeqCmp(const Sequence &a, const Sequence &b)
 {
-    if (abs(a.len - b.len) <= 10 ){
-        return a.cov> b.cov;
-    }
+    // if (abs(a.len - b.len) <= 10 ){
+    //     return a.cov> b.cov;
+    // }
 
     // return a.cov + a.len/a.len +b.len*3 > b.cov/b.len + b.len*3;
     return a.score > b.score; 
