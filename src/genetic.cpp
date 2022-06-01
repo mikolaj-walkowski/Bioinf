@@ -62,14 +62,15 @@ void Generation::score(Sequence &s)
     float len = (-1.f/((float)graph->length))*abs(wL-graph->length) + 1.f;
     s.len = len;
 
-    float cov = ((float)s.val.size())/((float)this->graph->size);
+    float cov = ((float)s.val.size())/120.f;//(float)this->graph->size);
     s.cov = cov;
 
     float d = (((float)s.val.size())/wL);
     s.density = d;
 
     int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0;
-    s.score = 5*d + len  ; //+ cov + len + bonus*5;
+    
+    s.score = cov + bonus;//d + 4*cov + len + bonus*2;
 }
 
 void Generation::grow(const vector<int>& core){
@@ -93,7 +94,6 @@ void Generation::grow(const vector<int>& core){
         
         if(seq.val.size() > 2 ){
         score(seq);
-
         addSeq(seq);
         }
 }
