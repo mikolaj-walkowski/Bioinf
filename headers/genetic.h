@@ -28,7 +28,7 @@ public:
 
     Graph* graph;
 
-    int opWeights[5]={7,2,0,0,0};
+    int opWeights[5]={7,2,5,0,0};
     int opTotalWeight=0;
 
     int maxSize = 5000;
@@ -45,7 +45,8 @@ public:
     void mutate(const Sequence& a);
     void grow(const vector<int>& s);
     void connect(const Sequence& a,const Sequence& b);
-
+    void cross(const Sequence&a , const Sequence& b);
+    
     void addSeq(Sequence);
     void showResults();
     void step();

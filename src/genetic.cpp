@@ -70,7 +70,7 @@ void Generation::score(Sequence &s)
 
     int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0;
     
-    s.score = cov + bonus;//d + 4*cov + len + bonus*2;
+    s.score = cov + d + bonus;//d + 4*cov + len + bonus*2;
 }
 
 void Generation::grow(const vector<int>& core){
@@ -135,6 +135,47 @@ bool SeqCmp(const Sequence &a, const Sequence &b)
     return a.score > b.score; 
 }
 
+bool isConnected(int a) {
+    return a > 0;
+}
+
+void Generation::cross(const Sequence& a, const Sequence& b) {
+    int aRandPos = rand()%a.val.size();
+    unsigned int rand_n1 = a.val[aRandPos];
+    std::vector<int> availableVertex = this->graph->aMatrix[rand_n1];
+    std::vector<int>::iterator iter = availableVertex.begin();
+
+    std::vector<int> legalConnections = {};
+
+    while ((iter = std::find_if(iter, availableVertex.end(), isConnected)) != availableVertex.end())
+    {
+        legalConnections.push_back(iter - availableVertex.begin());
+        iter++;
+    }
+
+    std::vector<int> availableConnections(legalConnections.size() + b.val.size(), -1);
+    set_intersection(legalConnections.begin(), legalConnections.end(), b.val.begin(), b.val.end(), availableConnections.begin());
+    availableConnections.erase(remove(availableConnections.begin(), availableConnections.end(), -1), availableConnections.end());
+
+    if(availableConnections.size() == 0) return;
+
+    unsigned int chosenOne = availableConnections[rand()%availableConnections.size()];
+
+    std::vector<int> combined(aRandPos);
+    copy(a.val.begin(), a.val.begin() + aRandPos, combined.begin());
+    combined.insert(combined.end(), find(b.val.begin(), b.val.end(), chosenOne), b.val.end());
+    
+    Sequence newSeq;
+
+    newSeq.val = combined;
+    
+    score(newSeq);
+
+    this->addSeq(newSeq);
+
+    return;
+};
+
 void Generation::step()
 {
 
@@ -166,7 +207,12 @@ void Generation::step()
             break;
         }   
         case CROSS:{
-            //TODO
+            int a = rand()%population_culled, b;
+            do {
+                b = rand()%population_culled;
+            }while(b == a);
+
+            cross(population[a], population[b]);
             break;
         }   
         case CONNECT:{
