@@ -1,5 +1,6 @@
 #include "genetic.h"
 #include <set>
+#include <map>
 #include <limits>
 
 
@@ -12,6 +13,18 @@ float epsilon = 0;
 //     }
 //     cout<<"\n";
 // }
+
+template <typename Iterator>
+bool has_duplicates( Iterator first, Iterator last )
+{
+  std::map <typename std::iterator_traits <Iterator> ::value_type, std::size_t> histogram;
+
+  while (first != last)
+    if (++histogram[ *first++ ] > 1) 
+      return true;
+
+  return false;
+}
 
 Generation::Generation(Graph *a) : graph(a)
 {
@@ -48,29 +61,22 @@ bool validate(const vector<int>& a){
     return a.size()==b.size();
 }
 
-void Generation::connect(const Sequence& a, const Sequence& b){
-    
-}
-
 void Generation::score(Sequence &s)
 {
     float wL = graph->wordLength(s.val);
-    //int len = graph->length - wL > 0 ? wL - graph->length : graph->length - wL;
-    
-    // if(wL > graph->length + 10) {s.cov = numeric_limits<float>::lowest(); s.density = numeric_limits<float>::lowest(); s.len=numeric_limits<float>::lowest();s.score=numeric_limits<float>::lowest();return;}
-    // dla idealnej 1 
+
     float len = (-1.f/((float)graph->length))*abs(wL-graph->length) + 1.f;
     s.len = len;
 
-    float cov = ((float)s.val.size())/120.f;//(float)this->graph->size);
+    float cov = ((float)s.val.size())/120.f; //TODO Hardcoded
     s.cov = cov;
 
     float d = (((float)s.val.size())/wL);
     s.density = d;
 
-    int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0;
+    int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0; //TODO Hardcoded
     
-    s.score = cov + d + bonus;//d + 4*cov + len + bonus*2;
+    s.score = scoringWeights[0]*d + scoringWeights[1]*cov + scoringWeights[2] * len + scoringWeights[3]*bonus;
 }
 
 void Generation::grow(const vector<int>& core){
@@ -139,21 +145,52 @@ bool isConnected(int a) {
     return a > 0;
 }
 
+void Generation::connect(const Sequence& a,const Sequence& b){
+    auto i = a.val.begin();
+    for (; i != a.val.end(); i++)
+    {
+        if(equal(i,a.val.end(),b.val.begin())){
+            vector<int> core(i,a.val.end());
+            core.insert(core.end(),b.val.begin(),b.val.begin()+core.size());
+            if(has_duplicates(core.begin(),core.end())){
+                continue;
+            }else{
+                Sequence newSeq;
+                newSeq.val = core;
+                score(newSeq);
+                addSeq(newSeq); 
+                break;
+            }
+        }
+    }
+
+    i =b.val.begin();
+
+    for (; i != b.val.end(); i++)
+    {
+        if(equal(i,b.val.end(),a.val.begin())){
+            vector<int> core(i,b.val.end());
+            core.insert(core.end(),a.val.begin(),a.val.begin()+core.size());
+            if(has_duplicates(core.begin(),core.end())){
+                continue;
+            }else{
+                Sequence newSeq;
+                newSeq.val = core;
+                score(newSeq);
+                addSeq(newSeq); 
+                break;
+            }
+        }
+    }
+}
+
 void Generation::cross(const Sequence& a, const Sequence& b) {
     int aRandPos = rand()%a.val.size();
     unsigned int rand_n1 = a.val[aRandPos];
-    std::vector<int> availableVertex = this->graph->aMatrix[rand_n1];
-    std::vector<int>::iterator iter = availableVertex.begin();
-
-    std::vector<int> legalConnections = {};
-
-    while ((iter = std::find_if(iter, availableVertex.end(), isConnected)) != availableVertex.end())
-    {
-        legalConnections.push_back(iter - availableVertex.begin());
-        iter++;
-    }
+    std::vector<int> legalConnections = this->graph->aList[rand_n1];
 
     std::vector<int> availableConnections(legalConnections.size() + b.val.size(), -1);
+
     set_intersection(legalConnections.begin(), legalConnections.end(), b.val.begin(), b.val.end(), availableConnections.begin());
     availableConnections.erase(remove(availableConnections.begin(), availableConnections.end(), -1), availableConnections.end());
 
@@ -164,6 +201,8 @@ void Generation::cross(const Sequence& a, const Sequence& b) {
     std::vector<int> combined(aRandPos);
     copy(a.val.begin(), a.val.begin() + aRandPos, combined.begin());
     combined.insert(combined.end(), find(b.val.begin(), b.val.end(), chosenOne), b.val.end());
+    
+    if(has_duplicates(combined.begin(),combined.end())) return;
     
     Sequence newSeq;
 
@@ -216,7 +255,9 @@ void Generation::step()
             break;
         }   
         case CONNECT:{
-            //TODO
+            int a = rand()%population_culled, b = rand()%population_culled;
+            if(a == b) b = (b+1) % population_culled;
+            connect(population[a], population[b]);
             break;
         }   
         case INSERT:{
@@ -236,7 +277,7 @@ void Generation::step()
 void Generation::showResults(){
     for (int i = 0; i < population_size && i < 20; i++)
     {
-        cout<<"Rank: "<<i+1<<" \tLen: "<< population[i].len << "\tCov: "<< population[i].cov<<"\tScore: "<< population[i].score<<"\n";
+        cout<<"Rank: "<<i+1<<"\tLen: "<< population[i].len<< "\tCov: "<< population[i].cov <<"\tdensity: "<< population[i].density <<"\tScore: "<< population[i].score<<"\n";
     }
 }
 

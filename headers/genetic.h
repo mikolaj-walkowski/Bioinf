@@ -25,19 +25,20 @@ enum Operation{
 
 class Generation{
 public:
-
-    Graph* graph;
-
-    int opWeights[5]={7,2,5,0,0};
-    int opTotalWeight=0;
-
-    int maxSize = 5000;
-    int population_size = 0;
+    /* d,cov,len,bonus*/
+    float goodPreset[4] = {6.5625,3,0.55,0.15};
+    //Parameters
+    float* scoringWeights = goodPreset;
+    int maxSize = 5000; //
     int population_culled = 300;
-    Sequence population[5005];
+    Sequence population[5005]; // At least maxSize + 2
+    int opWeights[5]={4,2,2,2,0};
 
+    int opTotalWeight=0;
+    int population_size = 0;
     vector<Operation> opHelper={MUTATE,GROW,CROSS,CONNECT,INSERT};
 
+    Graph* graph;
     Generation(Graph*);
 
     void score(Sequence& s);
