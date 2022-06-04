@@ -24,6 +24,7 @@ public:
    void printMatrix();
    void printPath(const vector<int> &);
    int wordLength(const vector<int> &);
+   void update();
    //  bool repeats(const vector<int>&);
 
    Graph(const char *name);

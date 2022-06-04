@@ -2,7 +2,7 @@
 #include <set>
 #include <map>
 #include <limits>
-
+#include <random>
 
 float epsilon = 0;
 
@@ -15,25 +15,25 @@ float epsilon = 0;
 // }
 
 template <typename Iterator>
-bool has_duplicates( Iterator first, Iterator last )
+bool has_duplicates(Iterator first, Iterator last)
 {
-  std::map <typename std::iterator_traits <Iterator> ::value_type, std::size_t> histogram;
+    std::map<typename std::iterator_traits<Iterator>::value_type, std::size_t> histogram;
 
-  while (first != last)
-    if (++histogram[ *first++ ] > 1) 
-      return true;
+    while (first != last)
+        if (++histogram[*first++] > 1)
+            return true;
 
-  return false;
+    return false;
 }
 
 Generation::Generation(Graph *a) : graph(a)
 {
-    epsilon = ((float)a->names[0].length())/((float)a->length);
+    epsilon = ((float)a->names[0].length()) / ((float)a->length);
     for (int i = 0; i < opHelper.size(); i++)
     {
-        opTotalWeight+= opWeights[i];
+        opTotalWeight += opWeights[i];
     }
-    
+
     for (int i = 0; i < population_culled; i++)
     {
         Sequence s;
@@ -41,8 +41,8 @@ Generation::Generation(Graph *a) : graph(a)
         do
         {
             j = (j + 1) % graph->size;
-        } while (graph->aList[j].size() == 0 && graph->aListRev[j].size() == 0 );
-        
+        } while (graph->aList[j].size() == 0 && graph->aListRev[j].size() == 0);
+
         int l = rand() % graph->aListRev[j].size();
         s.val.push_back(graph->aListRev[j][l]);
 
@@ -56,66 +56,69 @@ Generation::Generation(Graph *a) : graph(a)
     }
 }
 
-bool validate(const vector<int>& a){
-    set<int> b(a.begin(),a.end());
-    return a.size()==b.size();
+bool validate(const vector<int> &a)
+{
+    set<int> b(a.begin(), a.end());
+    return a.size() == b.size();
 }
 
 void Generation::score(Sequence &s)
 {
     float wL = graph->wordLength(s.val);
 
-    float len = (-1.f/((float)graph->length))*abs(wL-graph->length) + 1.f;
+    float len = (-1.f / ((float)graph->length)) * abs(wL - graph->length) + 1.f;
     s.len = len;
 
-    float cov = ((float)s.val.size())/120.f; //TODO Hardcoded
+    float cov = ((float)s.val.size()) / 120.f; // TODO Hardcoded
     s.cov = cov;
 
-    float d = (((float)s.val.size())/wL);
+    float d = (((float)s.val.size()) / wL);
     s.density = d;
 
-    int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0; //TODO Hardcoded
-    
-    s.score = scoringWeights[0]*d + scoringWeights[1]*cov + scoringWeights[2] * len + scoringWeights[3]*bonus;
+    int bonus = abs(wL - graph->length) <= 10 ? 1 : 0; // TODO Hardcoded
+
+    s.score = scoringWeights[0] * d + scoringWeights[1] * cov + scoringWeights[2] * len + scoringWeights[3] * bonus;
 }
 
-void Generation::grow(const vector<int>& core){
-        auto Con = graph->aListRev[core[0]];
-        int e = rand() % Con.size();
-        Sequence seq;
-        if (find(core.begin(),core.end(), Con[e]) == core.end())
-        {
-            seq.val.push_back(Con[e]);
-        }
-        seq.val.insert(seq.val.end(), core.begin(),core.end());
-        
-        Con = graph->aList[core[core.size()-1]];
+void Generation::grow(const vector<int> &core)
+{
+    auto Con = graph->aListRev[core[0]];
+    int e = rand() % Con.size();
+    Sequence seq;
+    if (find(core.begin(), core.end(), Con[e]) == core.end())
+    {
+        seq.val.push_back(Con[e]);
+    }
+    seq.val.insert(seq.val.end(), core.begin(), core.end());
 
-        e = rand() % Con.size();
+    Con = graph->aList[core[core.size() - 1]];
 
-        if (find(seq.val.begin(),seq.val.end(), Con[e]) == seq.val.end())
-        {
-            seq.val.push_back(Con[e]);
-        }
-        
-        if(seq.val.size() > 2 ){
+    e = rand() % Con.size();
+
+    if (find(seq.val.begin(), seq.val.end(), Con[e]) == seq.val.end())
+    {
+        seq.val.push_back(Con[e]);
+    }
+
+    if (seq.val.size() > 2)
+    {
         score(seq);
         addSeq(seq);
-        }
+    }
 }
-void Generation::mutate(const Sequence& s)
+void Generation::mutate(const Sequence &s)
 {
-    if(s.val.size()<3)
+    if (s.val.size() < 3)
         return;
-    int i = (rand() % (s.val.size()- 2))+ 1;
-    vector<int> core1(s.val.begin(),s.val.begin()+i);
-    vector<int> core2(s.val.begin() + i,s.val.end());
-    
+    int i = (rand() % (s.val.size() - 2)) + 1;
+    vector<int> core1(s.val.begin(), s.val.begin() + i);
+    vector<int> core2(s.val.begin() + i, s.val.end());
+
     Sequence s1, s2;
-    
+
     s1.val = core1;
     s2.val = core2;
-    
+
     score(s1);
     score(s2);
 
@@ -128,7 +131,6 @@ void Generation::combine(const Sequence &a, const Sequence &b)
     for (int i = 0; i < a.len; i++)
     {
     }
-    
 }
 
 bool SeqCmp(const Sequence &a, const Sequence &b)
@@ -138,54 +140,65 @@ bool SeqCmp(const Sequence &a, const Sequence &b)
     // }
 
     // return a.cov + a.len/a.len +b.len*3 > b.cov/b.len + b.len*3;
-    return a.score > b.score; 
+    return a.score > b.score;
 }
 
-bool isConnected(int a) {
+bool isConnected(int a)
+{
     return a > 0;
 }
 
-void Generation::connect(const Sequence& a,const Sequence& b){
+void Generation::connect(const Sequence &a, const Sequence &b)
+{
     auto i = a.val.begin();
     for (; i != a.val.end(); i++)
     {
-        if(equal(i,a.val.end(),b.val.begin())){
-            vector<int> core(i,a.val.end());
-            core.insert(core.end(),b.val.begin(),b.val.begin()+core.size());
-            if(has_duplicates(core.begin(),core.end())){
+        if (equal(i, a.val.end(), b.val.begin()))
+        {
+            vector<int> core(i, a.val.end());
+            core.insert(core.end(), b.val.begin(), b.val.begin() + core.size());
+            if (has_duplicates(core.begin(), core.end()))
+            {
                 continue;
-            }else{
+            }
+            else
+            {
                 Sequence newSeq;
                 newSeq.val = core;
                 score(newSeq);
-                addSeq(newSeq); 
+                addSeq(newSeq);
                 break;
             }
         }
     }
 
-    i =b.val.begin();
+    i = b.val.begin();
 
     for (; i != b.val.end(); i++)
     {
-        if(equal(i,b.val.end(),a.val.begin())){
-            vector<int> core(i,b.val.end());
-            core.insert(core.end(),a.val.begin(),a.val.begin()+core.size());
-            if(has_duplicates(core.begin(),core.end())){
+        if (equal(i, b.val.end(), a.val.begin()))
+        {
+            vector<int> core(i, b.val.end());
+            core.insert(core.end(), a.val.begin(), a.val.begin() + core.size());
+            if (has_duplicates(core.begin(), core.end()))
+            {
                 continue;
-            }else{
+            }
+            else
+            {
                 Sequence newSeq;
                 newSeq.val = core;
                 score(newSeq);
-                addSeq(newSeq); 
+                addSeq(newSeq);
                 break;
             }
         }
     }
 }
 
-void Generation::cross(const Sequence& a, const Sequence& b) {
-    int aRandPos = rand()%a.val.size();
+void Generation::cross(const Sequence &a, const Sequence &b)
+{
+    int aRandPos = rand() % a.val.size();
     unsigned int rand_n1 = a.val[aRandPos];
     std::vector<int> legalConnections = this->graph->aList[rand_n1];
 
@@ -194,20 +207,22 @@ void Generation::cross(const Sequence& a, const Sequence& b) {
     set_intersection(legalConnections.begin(), legalConnections.end(), b.val.begin(), b.val.end(), availableConnections.begin());
     availableConnections.erase(remove(availableConnections.begin(), availableConnections.end(), -1), availableConnections.end());
 
-    if(availableConnections.size() == 0) return;
+    if (availableConnections.size() == 0)
+        return;
 
-    unsigned int chosenOne = availableConnections[rand()%availableConnections.size()];
+    unsigned int chosenOne = availableConnections[rand() % availableConnections.size()];
 
     std::vector<int> combined(aRandPos);
     copy(a.val.begin(), a.val.begin() + aRandPos, combined.begin());
     combined.insert(combined.end(), find(b.val.begin(), b.val.end(), chosenOne), b.val.end());
-    
-    if(has_duplicates(combined.begin(),combined.end())) return;
-    
+
+    if (has_duplicates(combined.begin(), combined.end()))
+        return;
+
     Sequence newSeq;
 
     newSeq.val = combined;
-    
+
     score(newSeq);
 
     this->addSeq(newSeq);
@@ -215,72 +230,105 @@ void Generation::cross(const Sequence& a, const Sequence& b) {
     return;
 };
 
+string GenerateRandomSequence(unsigned int len = 10)
+{
+    std::random_device rng;
+    std::mt19937 gen(rng());
+    char letters[4] = {'A', 'C', 'T', 'G'};
+    std::uniform_int_distribution<> distr(0, 3);
+
+    string sequence = "";
+    for (int i = 0; i < len; ++i)
+    {
+        sequence += letters[distr(gen)];
+    }
+
+    return sequence;
+}
+
+void Generation::insert()
+{
+    string newValue = GenerateRandomSequence();
+    this->graph->names.push_back(newValue);
+    this->graph->update();
+}
+
 void Generation::step()
 {
 
     while (population_size < maxSize)
     {
-        int operation = rand()%opTotalWeight;
-        int currSum=0;
-        
+        int operation = rand() % opTotalWeight;
+        int currSum = 0;
+
         Operation e;
 
         for (int i = 0; i < opHelper.size(); i++)
         {
-            currSum+= opWeights[opHelper[i]];
-            if(operation < currSum){
+            currSum += opWeights[opHelper[i]];
+            if (operation < currSum)
+            {
                 e = opHelper[i];
                 break;
             }
         }
         switch (e)
         {
-        case MUTATE:{
-            int i = rand()%population_culled;
+        case MUTATE:
+        {
+            int i = rand() % population_culled;
             mutate(population[i]);
             break;
-        }   
-        case GROW:{
-            int i = rand()%population_culled;
+        }
+        case GROW:
+        {
+            int i = rand() % population_culled;
             grow(population[i].val);
             break;
-        }   
-        case CROSS:{
-            int a = rand()%population_culled, b;
-            do {
-                b = rand()%population_culled;
-            }while(b == a);
+        }
+        case CROSS:
+        {
+            int a = rand() % population_culled, b;
+            do
+            {
+                b = rand() % population_culled;
+            } while (b == a);
 
             cross(population[a], population[b]);
             break;
-        }   
-        case CONNECT:{
-            int a = rand()%population_culled, b = rand()%population_culled;
-            if(a == b) b = (b+1) % population_culled;
+        }
+        case CONNECT:
+        {
+            int a = rand() % population_culled, b = rand() % population_culled;
+            if (a == b)
+                b = (b + 1) % population_culled;
             connect(population[a], population[b]);
             break;
-        }   
-        case INSERT:{
-            //TODO
-            break;
-        }   
-        default:{
-            break;
-        }   
         }
-        
+        case INSERT:
+        {
+            // TODO
+            break;
+        }
+        default:
+        {
+            break;
+        }
+        }
     }
-    
-    std::sort(population, population+population_size, SeqCmp);
-    population_size=population_culled;
+
+    std::sort(population, population + population_size, SeqCmp);
+    population_size = population_culled;
 }
-void Generation::showResults(){
+void Generation::showResults()
+{
     for (int i = 0; i < population_size && i < 20; i++)
     {
-        cout<<"Rank: "<<i+1<<"\tLen: "<< population[i].len<< "\tCov: "<< population[i].cov <<"\tdensity: "<< population[i].density <<"\tScore: "<< population[i].score<<"\n";
+        cout << "Rank: " << i + 1 << "\tLen: " << population[i].len << "\tCov: " << population[i].cov << "\tdensity: " << population[i].density << "\tScore: " << population[i].score << "\n";
     }
 }
 
-void Generation::addSeq(Sequence a){
-    population[population_size++]  = a;
+void Generation::addSeq(Sequence a)
+{
+    population[population_size++] = a;
 }

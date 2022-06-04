@@ -7,7 +7,7 @@ using namespace std;
 
 class Sequence
 {
-    public:
+public:
     vector<int> val;
     float score;
     float len;
@@ -15,7 +15,8 @@ class Sequence
     float density;
 };
 
-enum Operation{
+enum Operation
+{
     MUTATE,
     GROW,
     CROSS,
@@ -23,33 +24,34 @@ enum Operation{
     INSERT
 };
 
-class Generation{
+class Generation
+{
 public:
     /* d,cov,len,bonus*/
-    float goodPreset[4] = {6.5625,3,0.55,0.15};
-    //Parameters
-    float* scoringWeights = goodPreset;
+    float goodPreset[4] = {6.5625, 3, 0.55, 0.15};
+    // Parameters
+    float *scoringWeights = goodPreset;
     int maxSize = 5000; //
     int population_culled = 300;
     Sequence population[5005]; // At least maxSize + 2
-    int opWeights[5]={4,2,2,2,0};
+    int opWeights[5] = {4, 2, 2, 2, 0};
 
-    int opTotalWeight=0;
+    int opTotalWeight = 0;
     int population_size = 0;
-    vector<Operation> opHelper={MUTATE,GROW,CROSS,CONNECT,INSERT};
+    vector<Operation> opHelper = {MUTATE, GROW, CROSS, CONNECT, INSERT};
 
-    Graph* graph;
-    Generation(Graph*);
+    Graph *graph;
+    Generation(Graph *);
 
-    void score(Sequence& s);
-    void combine(const Sequence& a,const Sequence& b);
-    void mutate(const Sequence& a);
-    void grow(const vector<int>& s);
-    void connect(const Sequence& a,const Sequence& b);
-    void cross(const Sequence&a , const Sequence& b);
-    
+    void score(Sequence &s);
+    void combine(const Sequence &a, const Sequence &b);
+    void mutate(const Sequence &a);
+    void grow(const vector<int> &s);
+    void connect(const Sequence &a, const Sequence &b);
+    void cross(const Sequence &a, const Sequence &b);
+    void insert();
+
     void addSeq(Sequence);
     void showResults();
     void step();
-
 };
