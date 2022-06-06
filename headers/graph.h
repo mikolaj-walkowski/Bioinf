@@ -20,7 +20,11 @@ public:
    vector<string> names;
    vector<int> path;
 
-   int size;
+   float size;
+   int extras; 
+
+   vector<int> extrasCount;
+
    int length;
    int word;
 
@@ -28,7 +32,6 @@ public:
    void printPath(const vector<int> &);
    int wordLength(const vector<int> &);
    int overlap(string a, string b);
-   //  bool repeats(const vector<int>&);
 
    Graph(const char *name);
    ~Graph();

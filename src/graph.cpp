@@ -19,15 +19,23 @@ int Graph::overlap(string a, string b){
     while (!in.eof())
     {
         in>> a;
+        if(a == "")
+            continue;
         uniqueNames.insert(a);
     }
     in.close();
     for(auto i = uniqueNames.begin();i != uniqueNames.end();i++){
         names.push_back(*i);
     }
-    aMatrix.resize(names.size(),vector<int>(names.size(), 0));
+    
+    
+    aMatrix.resize(names.size()*1.4,vector<int>(names.size()*1.4, 0));
 
     size = names.size();
+    extras = names.size()*1.4; 
+
+    extrasCount.reserve(extras - names.size());
+
     word = names[0].length();
 
     for (int i = 0; i < names.size(); i++)
