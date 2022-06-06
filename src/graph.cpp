@@ -1,6 +1,6 @@
 #include "graph.h"
 
-int overlap(string a, string b){
+int Graph::overlap(string a, string b){
     int res = -1;
     for (int i = 0; i < a.length(); i++)
     {
@@ -19,12 +19,17 @@ int overlap(string a, string b){
     while (!in.eof())
     {
         in>> a;
-        names.push_back(a);
+        uniqueNames.insert(a);
     }
     in.close();
+    for(auto i = uniqueNames.begin();i != uniqueNames.end();i++){
+        names.push_back(*i);
+    }
     aMatrix.resize(names.size(),vector<int>(names.size(), 0));
+
     size = names.size();
-    
+    word = names[0].length();
+
     for (int i = 0; i < names.size(); i++)
     {
         for (int j = 0; j < names.size(); j++)

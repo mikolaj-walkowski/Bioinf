@@ -47,14 +47,14 @@ public:
     /* d,cov,len,bonus*/
     float goodPreset[4] = {6.5625,3.1995,0.55,0.15};
     float betterPreset[4] = {6.5625,3.1995,0.55,0.25};
-    float testPreset[4] = {6.5625,3.3,0.55,0.32};
+    float testPreset[4] = {0.f,3.f,1.f,0.f};
 
     //Parameters
     float* scoringWeights = testPreset;//goodPreset;
-    int maxSize = 5000; //
-    int population_culled = 300;
+    int maxSize = 2000; //
+    int population_culled = 500;
     Sequence population[5005]; // At least maxSize + 2
-    int opWeights[5]={7,2,5,2,0};
+    int opWeights[5]={70,10,50,10,0};
 
     int opTotalWeight=0;
     int population_size = 0;
@@ -71,6 +71,7 @@ public:
     void grow(const vector<int>& s);
     void connect(const Sequence& a,const Sequence& b);
     void cross(const Sequence&a , const Sequence& b);
+    void insert();
     
     void addSeq(Sequence);
     void showResults();

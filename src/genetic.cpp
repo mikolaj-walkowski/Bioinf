@@ -1,7 +1,7 @@
 #include "genetic.h"
 #include <map>
 #include <limits>
-
+#include <random>
 
 float epsilon = 0;
 
@@ -12,6 +12,11 @@ float epsilon = 0;
 //     }
 //     cout<<"\n";
 // }
+
+bool SeqCmp(const Sequence &a, const Sequence &b)
+{
+    return a.score > b.score; 
+}
 
 template <typename Iterator>
 bool has_duplicates( Iterator first, Iterator last )
@@ -26,7 +31,7 @@ bool has_duplicates( Iterator first, Iterator last )
 }
 
 Generation::Generation(Graph *a) : graph(a){
-    epsilon = ((float)a->names[0].length())/((float)a->length);
+    epsilon = ((float)a->word)/((float)a->length);
     for (int i = 0; i < opHelper.size(); i++)
     {
         opTotalWeight+= opWeights[i];
@@ -52,6 +57,7 @@ Generation::Generation(Graph *a) : graph(a){
         score(s);
         population[population_size++]  = s;
     }
+    set = unordered_set<Sequence,SequenceHash>(population,population + population_culled);
 }
 
 void Generation::score(Sequence &s)
@@ -61,15 +67,13 @@ void Generation::score(Sequence &s)
     float len = (-1.f/((float)graph->length))*abs(wL-graph->length) + 1.f;
     s.len = len;
 
-    float cov = ((float)s.val.size())/120.f; //TODO Hardcoded
+    float cov = ((float)s.val.size())/((float)graph->size);
     s.cov = cov;
 
     float d = (((float)s.val.size())/wL);
     s.density = d;
-
-    int bonus = abs(wL - graph->length ) <= 10 ? 1 : 0; //TODO Hardcoded
     
-    s.score = scoringWeights[0]*d + scoringWeights[1]*cov + scoringWeights[2] * len + scoringWeights[3]*bonus;
+    s.score = scoringWeights[0]*d + scoringWeights[1]*cov + scoringWeights[2] * len;
 }
 
 void Generation::grow(const vector<int>& core){
@@ -95,6 +99,7 @@ void Generation::grow(const vector<int>& core){
             addSeq(seq);
         }
 }
+
 void Generation::mutate(const Sequence& s)
 {
     if(s.val.size()<3)
@@ -118,15 +123,6 @@ void Generation::combine(const Sequence &a, const Sequence &b)
     {
     }
     
-}
-
-bool SeqCmp(const Sequence &a, const Sequence &b)
-{
-    return a.score > b.score; 
-}
-
-bool isConnected(int a) {
-    return a > 0;
 }
 
 void Generation::connect(const Sequence& a,const Sequence& b){
@@ -195,9 +191,59 @@ void Generation::cross(const Sequence& a, const Sequence& b) {
     return;
 };
 
+string GenerateRandomSequence(unsigned int len = 10)
+{
+    std::random_device rng;
+    std::mt19937 gen(rng());
+    char letters[4] = {'A', 'C', 'T', 'G'};
+    std::uniform_int_distribution<> distr(0, 3);
+
+    string sequence = "";
+    for (int i = 0; i < len; ++i)
+    {
+        sequence += letters[distr(gen)];
+    }
+
+    return sequence;
+}
+
+void Generation::insert(){
+    string word;
+    do{
+        word = GenerateRandomSequence(graph->word);
+    }while(!graph->uniqueNames.insert(word).second);
+
+    graph->names.push_back(word);
+
+    int i = graph->names.size()-1;
+
+    vector<int> newRow(graph->names.size());
+    for (int j = 0; j < graph->names.size(); j++)
+    {
+        int over = graph->overlap(graph->names[i],graph->names[j]);
+        if(i != j && over!=-1){
+            newRow[j] = over;
+        }
+    }
+
+    graph->aMatrix.push_back(newRow);
+
+    graph->aList.push_back(vector<int>());
+    graph->aListRev.push_back(vector<int>());
+
+    for (int j = 0; j < graph->names.size(); j++)
+    {
+        if(graph->aMatrix[i][j]!= 0){
+            graph->aList[i].push_back(j);
+        }
+        if(graph->aMatrix[j][i]!= 0){
+            graph->aListRev[i].push_back(j);
+        }
+    }
+}
+
 void Generation::step()
 {
-    set = unordered_set<Sequence,SequenceHash>(population,population + population_culled);
 
     while (population_size < maxSize)
     {
@@ -242,7 +288,7 @@ void Generation::step()
             break;
         }   
         case INSERT:{
-            //TODO
+            insert();
             break;
         }   
         default:{
@@ -254,6 +300,8 @@ void Generation::step()
     
     std::sort(population, population+population_size, SeqCmp);
     population_size=population_culled;
+
+
 }
 void Generation::showResults(){
     for (int i = 0; i < population_size && i < 20; i++)
