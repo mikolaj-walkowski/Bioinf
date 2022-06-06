@@ -14,14 +14,14 @@ void printvec(const vector<int> a){
 
 int main(int argc, char** argv) {
 
-    const char* filename = "../data/18.200-80.txt" ;//argv[1];
+    char* filename = argv[1];
     
     Graph g(filename);
-    // int len = strlen(filename);
-    // char* numStart = strchr(strchr(filename,'/'),'.') + 1;
+    int len = strlen(filename);
+    char* numStart = strchr(strchr(filename,'/'),'.') + 1;
         
-    // numStart[3] = '\0';
-    g.length = 209; //atoi(numStart)+ 9;
+    numStart[3] = '\0';
+    g.length = atoi(numStart)+ 9;
     
     cout << g.length <<"num\n";
 
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     float lastScore =0;
     int counter = 150;
 
-    for (int i = 0; i < 3000; i++)
+    for (int i = 0; i < 2300; i++)
     {
         std::cout<<"Gen: "<< i << " \tlen: "<< gen.population[0].len<<" \tcov: " << gen.population[0].cov <<" \tdensity: "<<gen.population[0].density << " \tscore:  " << gen.population[0].score<< '\n' ;  
         gen.step();

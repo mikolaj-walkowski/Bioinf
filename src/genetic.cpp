@@ -86,7 +86,7 @@ Generation::Generation(Graph *a) : graph(a)
 
         graph->names.push_back(word);
 
-        for (int j = 0; j < graph->names.size(); j++)
+        for (int j = 0; j < i; j++)
         {
             if (i != j)
             {
@@ -103,10 +103,10 @@ Generation::Generation(Graph *a) : graph(a)
             }
         }
 
-        graph->aList[i].clear();
-        graph->aListRev[i].clear();
+        graph->aList.push_back(vector<int>());
+        graph->aListRev.push_back(vector<int>());
 
-        for (int j = 0; j < graph->names.size(); j++)
+        for (int j = 0; j < i; j++)
         {
             if (graph->aMatrix[i][j] != 0)
             {
@@ -116,16 +116,7 @@ Generation::Generation(Graph *a) : graph(a)
             {
                 graph->aListRev[i].push_back(j);
             }
-            auto it = find(graph->aList[j].begin(), graph->aList[j].end(), i);
-            if(it!=graph->aList[j].end()){
-                graph->aList[j].erase(it);
-            }
-            it = find(graph->aListRev[j].begin(), graph->aListRev[j].end(), i);
-            if (it != graph->aListRev[j].end())
-            {
-                graph->aListRev[j].erase(it);   
-            }
-        
+
             if (graph->aMatrix[i][j] != 0)
             {
                 graph->aListRev[j].push_back(i);
@@ -143,7 +134,7 @@ void Generation::score(Sequence &s)
     float wL = graph->wordLength(s.val);
 
     float len = (1.f / ((float)graph->length)) * wL;
-    len = len <= 1 ? len : 0;
+    len = len <= 1 ? len : -10;
     s.len = len;
 
     float cov = ((float)s.val.size()) / graph->size;
