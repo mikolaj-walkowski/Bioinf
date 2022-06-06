@@ -1,7 +1,7 @@
 #pragma once
-
 #include "graph.h"
 #include <limits.h>
+#include <unordered_set>
 
 using namespace std;
 
@@ -13,6 +13,25 @@ class Sequence
     float len;
     float cov;
     float density;
+    bool operator==(const Sequence& s) const{
+        return this->val == s.val;
+    }
+};
+
+class SequenceHash
+{
+public:
+    size_t operator()(const Sequence& s) const
+    {
+        size_t hash = 0; 
+        for (int i = 0; i < s.val.size(); i++)
+        {
+            hash += s.val[i] % 100000;
+        }
+        hash *= s.score;
+        hash %= 100000;
+        return hash;
+    }
 };
 
 enum Operation{
@@ -26,18 +45,23 @@ enum Operation{
 class Generation{
 public:
     /* d,cov,len,bonus*/
-    float goodPreset[4] = {6.5625,3,0.55,0.15};
+    float goodPreset[4] = {6.5625,3.1995,0.55,0.15};
+    float betterPreset[4] = {6.5625,3.1995,0.55,0.25};
+    float testPreset[4] = {6.5625,3.3,0.55,0.32};
+
     //Parameters
-    float* scoringWeights = goodPreset;
+    float* scoringWeights = testPreset;//goodPreset;
     int maxSize = 5000; //
     int population_culled = 300;
     Sequence population[5005]; // At least maxSize + 2
-    int opWeights[5]={4,2,2,2,0};
+    int opWeights[5]={7,2,5,2,0};
 
     int opTotalWeight=0;
     int population_size = 0;
+
     vector<Operation> opHelper={MUTATE,GROW,CROSS,CONNECT,INSERT};
 
+    unordered_set<Sequence,SequenceHash> set;
     Graph* graph;
     Generation(Graph*);
 

@@ -1,5 +1,4 @@
 #include "genetic.h"
-#include <set>
 #include <map>
 #include <limits>
 
@@ -26,8 +25,7 @@ bool has_duplicates( Iterator first, Iterator last )
   return false;
 }
 
-Generation::Generation(Graph *a) : graph(a)
-{
+Generation::Generation(Graph *a) : graph(a){
     epsilon = ((float)a->names[0].length())/((float)a->length);
     for (int i = 0; i < opHelper.size(); i++)
     {
@@ -52,13 +50,8 @@ Generation::Generation(Graph *a) : graph(a)
         s.val.push_back(graph->aList[j][k]);
 
         score(s);
-        addSeq(s);
+        population[population_size++]  = s;
     }
-}
-
-bool validate(const vector<int>& a){
-    set<int> b(a.begin(),a.end());
-    return a.size()==b.size();
 }
 
 void Generation::score(Sequence &s)
@@ -99,8 +92,7 @@ void Generation::grow(const vector<int>& core){
         }
         
         if(seq.val.size() > 2 ){
-        score(seq);
-        addSeq(seq);
+            addSeq(seq);
         }
 }
 void Generation::mutate(const Sequence& s)
@@ -115,9 +107,6 @@ void Generation::mutate(const Sequence& s)
     
     s1.val = core1;
     s2.val = core2;
-    
-    score(s1);
-    score(s2);
 
     addSeq(s1);
     addSeq(s2);
@@ -133,11 +122,6 @@ void Generation::combine(const Sequence &a, const Sequence &b)
 
 bool SeqCmp(const Sequence &a, const Sequence &b)
 {
-    // if (abs(a.len - b.len) <= 10 ){
-    //     return a.cov> b.cov;
-    // }
-
-    // return a.cov + a.len/a.len +b.len*3 > b.cov/b.len + b.len*3;
     return a.score > b.score; 
 }
 
@@ -157,7 +141,6 @@ void Generation::connect(const Sequence& a,const Sequence& b){
             }else{
                 Sequence newSeq;
                 newSeq.val = core;
-                score(newSeq);
                 addSeq(newSeq); 
                 break;
             }
@@ -176,7 +159,6 @@ void Generation::connect(const Sequence& a,const Sequence& b){
             }else{
                 Sequence newSeq;
                 newSeq.val = core;
-                score(newSeq);
                 addSeq(newSeq); 
                 break;
             }
@@ -207,8 +189,6 @@ void Generation::cross(const Sequence& a, const Sequence& b) {
     Sequence newSeq;
 
     newSeq.val = combined;
-    
-    score(newSeq);
 
     this->addSeq(newSeq);
 
@@ -217,6 +197,7 @@ void Generation::cross(const Sequence& a, const Sequence& b) {
 
 void Generation::step()
 {
+    set = unordered_set<Sequence,SequenceHash>(population,population + population_culled);
 
     while (population_size < maxSize)
     {
@@ -282,5 +263,8 @@ void Generation::showResults(){
 }
 
 void Generation::addSeq(Sequence a){
-    population[population_size++]  = a;
+    score(a);
+    if(set.insert(a).second){
+        population[population_size++] = a;
+    }
 }
