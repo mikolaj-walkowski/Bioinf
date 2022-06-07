@@ -41,7 +41,9 @@ int Graph::overlap(string a, string b){
     }
     
     size = names.size();
-    extras = perfectNodeNum*1.2;
+    extras = names.size();
+    if(size < perfectNodeNum)
+        extras = perfectNodeNum*1.2;
 
     aMatrix.resize(extras,vector<int>(extras, 0));
 
