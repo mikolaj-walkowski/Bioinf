@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/drwho/Documents/GitHub/Bioinf/src/main.cpp
+iostream
+-
+fstream
+-
+string.h
+-
+graph.h
+/mnt/c/Users/drwho/Documents/GitHub/Bioinf/src/graph.h
+genetic.h
+/mnt/c/Users/drwho/Documents/GitHub/Bioinf/src/genetic.h
+chrono
+-
+
+headers/genetic.h
+graph.h
+headers/graph.h
+limits.h
+-
+unordered_set
+-
+
+headers/graph.h
+iostream
+-
+fstream
+-
+vector
+-
+string
+-
+unordered_set
+-
+algorithm
+-
+

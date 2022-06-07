@@ -230,7 +230,11 @@ void Generation::cross(const Sequence &a, const Sequence &b)
     return;
 };
 
+<<<<<<< Updated upstream
 string GenerateRandomSequence(unsigned int len = 10)
+=======
+void Generation::insert()
+>>>>>>> Stashed changes
 {
     std::random_device rng;
     std::mt19937 gen(rng());
@@ -246,11 +250,50 @@ string GenerateRandomSequence(unsigned int len = 10)
     return sequence;
 }
 
+<<<<<<< Updated upstream
 void Generation::insert()
 {
     string newValue = GenerateRandomSequence();
     this->graph->names.push_back(newValue);
     this->graph->update();
+=======
+            for (int j = 0; j < graph->extras; j++)
+            {
+                if (graph->aMatrix[i][j] != 0)
+                {
+                    graph->aList[i].push_back(j);
+                }
+                if (graph->aMatrix[j][i] != 0)
+                {
+                    graph->aListRev[i].push_back(j);
+                }
+
+                auto it = find(graph->aList[j].begin(), graph->aList[j].end(), i);
+
+                if (it != graph->aList[j].end())
+                {
+                    graph->aList[j].erase(it);
+                }
+
+                it = find(graph->aListRev[j].begin(), graph->aListRev[j].end(), i);
+
+                if (it != graph->aListRev[j].end())
+                {
+                    graph->aListRev[j].erase(it);
+                }
+
+                if (graph->aMatrix[i][j] != 0)
+                {
+                    graph->aListRev[j].push_back(i);
+                }
+                if (graph->aMatrix[j][i] != 0)
+                {
+                    graph->aList[j].push_back(i);
+                }
+            }
+        }
+    }
+>>>>>>> Stashed changes
 }
 
 void Generation::step()
@@ -319,12 +362,21 @@ void Generation::step()
 
     std::sort(population, population + population_size, SeqCmp);
     population_size = population_culled;
+<<<<<<< Updated upstream
+=======
+    insertCtr--;
+    if (insertCtr <= 0)
+    {
+        insert();
+        insertCtr = maxInsertCtr;
+    }
+>>>>>>> Stashed changes
 }
 void Generation::showResults()
 {
-    for (int i = 0; i < population_size && i < 20; i++)
+    for (int i = 0; i < population_size && i < 1; i++)
     {
-        cout << "Rank: " << i + 1 << "\tLen: " << population[i].len << "\tCov: " << population[i].cov << "\tdensity: " << population[i].density << "\tScore: " << population[i].score << "\n";
+        cout << "Rank: " << i + 1 << "\tLen: " << population[i].len << "\tCov: " << population[i].cov << "\tdensity: " << population[i].density << "\tScore: " << population[i].score << "\tAditional: " << maxInsertCtr - insertCtr << '\n';
     }
 }
 

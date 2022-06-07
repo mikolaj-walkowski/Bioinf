@@ -1,6 +1,10 @@
 #include "graph.h"
 
+<<<<<<< Updated upstream
 int overlap(string a, string b)
+=======
+int Graph::overlap(string a, string b)
+>>>>>>> Stashed changes
 {
     int res = -1;
     for (int i = 0; i < a.length(); i++)
@@ -13,11 +17,41 @@ int overlap(string a, string b)
     }
     return res;
 }
+<<<<<<< Updated upstream
+=======
+
+Graph::Graph(const char *name)
+{
+    std::ifstream in(name);
+    std::string a;
+    while (!in.eof())
+    {
+        in >> a;
+        if (a == "")
+            continue;
+        uniqueNames.insert(a);
+    }
+    in.close();
+    for (auto i = uniqueNames.begin(); i != uniqueNames.end(); i++)
+    {
+        names.push_back(*i);
+    }
+
+    aMatrix.resize(names.size() * 1.4, vector<int>(names.size() * 1.4, 0));
+>>>>>>> Stashed changes
 
 void Graph::update()
 {
     aMatrix.resize(names.size(), vector<int>(names.size(), 0));
     size = names.size();
+<<<<<<< Updated upstream
+=======
+    extras = names.size() * 1.4;
+
+    extrasCount.reserve(extras - names.size());
+
+    word = names[0].length();
+>>>>>>> Stashed changes
 
     for (int i = 0; i < names.size(); i++)
     {
@@ -45,6 +79,7 @@ void Graph::update()
                 aListRev[i].push_back(j);
             }
         }
+<<<<<<< Updated upstream
     }
 }
 
@@ -60,6 +95,10 @@ Graph::Graph(const char *name)
     in.close();
     update();
     cout << "Done loading\n";
+=======
+    }
+    // cout<<"Done loading\n";
+>>>>>>> Stashed changes
 }
 
 void Graph::printMatrix()

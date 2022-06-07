@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/bioinf.dir/src/main.cpp.o CMakeFiles/bioinf.dir/src/graph.cpp.o CMakeFiles/bioinf.dir/src/genetic.cpp.o  -o bioinf 
