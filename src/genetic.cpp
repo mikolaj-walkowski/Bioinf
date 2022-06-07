@@ -137,7 +137,8 @@ void Generation::score(Sequence &s)
     len = len <= 1 ? len : -10;
     s.len = len;
 
-    float cov = ((float)s.val.size()) / graph->size;
+    float cov = ((float)s.val.size()) / graph->perfectNodeNum;
+    cov = cov <= 1 ? cov: -1;
     s.cov = cov;
 
     float d = (((float)s.val.size()) / wL);
@@ -254,7 +255,9 @@ void Generation::cross(const Sequence &a, const Sequence &b)
     unsigned int chosenOne = availableConnections[rand() % availableConnections.size()];
 
     std::vector<int> combined(aRandPos);
+
     copy(a.val.begin(), a.val.begin() + aRandPos, combined.begin());
+    
     combined.insert(combined.end(), find(b.val.begin(), b.val.end(), chosenOne), b.val.end());
 
     if (has_duplicates(combined.begin(), combined.end()))

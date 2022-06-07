@@ -17,14 +17,7 @@ int main(int argc, char** argv) {
     char* filename = argv[1];
     
     Graph g(filename);
-    int len = strlen(filename);
-    char* numStart = strchr(strchr(filename,'/'),'.') + 1;
-        
-    numStart[3] = '\0';
-    g.length = atoi(numStart)+ 9;
-    
-    cout << g.length <<"num\n";
-
+   
     Generation gen(&g);
     
     float lastScore =0;

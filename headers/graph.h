@@ -28,6 +28,8 @@ public:
    int length;
    int word;
 
+   float perfectNodeNum;
+
    void printMatrix();
    void printPath(const vector<int> &);
    int wordLength(const vector<int> &);

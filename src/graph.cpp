@@ -16,6 +16,16 @@ int Graph::overlap(string a, string b){
  {
     std::ifstream in(name);
     std::string a;
+   
+    std::string b(name);
+
+    b = b.substr(0,b.size()-4);
+
+    std::string target = b.substr(b.rfind('.')+1,3);
+
+    perfectNodeNum = stoi(target);
+    length = perfectNodeNum+9;
+
     while (!in.eof())
     {
         in>> a;
@@ -24,15 +34,16 @@ int Graph::overlap(string a, string b){
         uniqueNames.insert(a);
     }
     in.close();
+
+
     for(auto i = uniqueNames.begin();i != uniqueNames.end();i++){
         names.push_back(*i);
     }
     
-    
-    aMatrix.resize(names.size()*1.4,vector<int>(names.size()*1.4, 0));
-
     size = names.size();
-    extras = names.size()*1.4; 
+    extras = perfectNodeNum*1.2;
+
+    aMatrix.resize(extras,vector<int>(extras, 0));
 
     extrasCount.reserve(extras - names.size());
 
